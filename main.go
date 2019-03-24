@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"LunaGO/server/messages"
 	"log"
 	"net"
 	"time"
@@ -9,7 +9,7 @@ import (
 
 func main() {
 	quit := make(chan (bool))
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 1; i++ {
 		go startClient(quit)
 	}
 	// stop := <-quit
@@ -26,11 +26,24 @@ func startClient(quit chan<- bool) {
 	}
 	defer conn.Close()
 	log.Println("Dial ok")
-	for i := 0; i < 10; i++ {
-		data := fmt.Sprintf("foo_%d", i)
-		conn.Write([]byte(data))
 
+	for i := 0; i < 1; i++ {
+		sendLogin(conn)
 		time.Sleep(time.Second * 5)
 	}
 	quit <- true
+}
+
+func sendLogin(conn net.Conn) {
+	login := &messages.Login{
+		ID: "123456",
+	}
+	data, err := login.Marshal()
+	if err != nil {
+		log.Println("login err:", err)
+	}
+
+	messageData, err := messages.Marshal(0, data)
+	conn.Write(messageData)
+
 }
