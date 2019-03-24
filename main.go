@@ -30,6 +30,8 @@ func startClient(quit chan<- bool) {
 	for i := 0; i < 1; i++ {
 		sendLogin(conn)
 		time.Sleep(time.Second * 5)
+		sendClose(conn)
+		time.Sleep(time.Second * 5)
 	}
 	quit <- true
 }
@@ -45,5 +47,12 @@ func sendLogin(conn net.Conn) {
 
 	messageData, err := messages.Marshal(0, data)
 	conn.Write(messageData)
+}
 
+func sendClose(conn net.Conn) {
+	messageData, err := messages.Marshal(-1, nil)
+	if err != nil {
+		log.Println("close err:", err)
+	}
+	conn.Write(messageData)
 }
