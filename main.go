@@ -1,58 +1,52 @@
 package main
 
 import (
-	"LunaGO/server/messages"
+	"LunaGO/server"
+	"LunaGO/server/stub"
+	"LunaTester/client"
+	"LunaTester/handlers"
 	"log"
 	"net"
-	"time"
 )
 
 func main() {
+	// Start Server
+	l, err := net.Listen("tcp", ":55555")
+	if err != nil {
+		log.Println("listen error:", err)
+		return
+	}
+
+	server_1 := server.New()
+	server_1.SetConnectionHandler(
+		func(cIndex int32, c net.Conn) {
+			defer c.Close()
+			stub := stub.New(cIndex)
+			stub.SetConnection(c)
+			stub.Handle(0, handlers.HandlerLogin(server_1))
+			stub.Start()
+		},
+	)
+
+	var connIndex int32 = 0
+	for {
+		c, err := l.Accept()
+		if err != nil {
+			log.Println("accept err:", err)
+			break
+		}
+		go server_1.HandleNewConnection(connIndex, c)
+		connIndex++
+	}
+
+	// Start Client
 	quit := make(chan (bool))
 	for i := 0; i < 1; i++ {
-		go startClient(quit)
+		go client.New(quit)
 	}
 	// stop := <-quit
 	if <-quit {
 		log.Println("quit")
 	}
-}
 
-func startClient(quit chan<- bool) {
-	log.Println("begin Dial")
-	conn, err := net.Dial("tcp", ":55555")
-	if err != nil {
-		log.Println("dial error:", err)
-	}
-	defer conn.Close()
-	log.Println("Dial ok")
-
-	for i := 0; i < 1; i++ {
-		sendLogin(conn)
-		time.Sleep(time.Second * 5)
-		sendClose(conn)
-		time.Sleep(time.Second * 5)
-	}
-	quit <- true
-}
-
-func sendLogin(conn net.Conn) {
-	login := &messages.Login{
-		ID: "123456",
-	}
-	data, err := login.Marshal()
-	if err != nil {
-		log.Println("login err:", err)
-	}
-
-	messageData, err := messages.Marshal(0, data)
-	conn.Write(messageData)
-}
-
-func sendClose(conn net.Conn) {
-	messageData, err := messages.Marshal(-1, nil)
-	if err != nil {
-		log.Println("close err:", err)
-	}
-	conn.Write(messageData)
 }
