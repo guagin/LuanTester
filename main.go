@@ -1,59 +1,40 @@
 package main
 
 import (
-	"LunaGO/server"
-	"LunaGO/server/stub"
 	"LunaTester/client"
-	"LunaTester/handlers"
+	"LunaTester/server"
 	"log"
-	"net"
+	"time"
 )
 
 func main() {
 	isServerOk := make(chan bool)
+	// start server
 	go startServer(isServerOk)
+	// wait until server is ok.
 	<-isServerOk
-	// Start Client
-	quit := make(chan (bool))
-	for i := 0; i < 1; i++ {
-		go client.New(quit)
+
+	// start client
+	quit := make(chan bool, 1)
+	// quit <- true
+	for i := 0; i < 3; i++ {
+		go startClient(quit, int32(i))
 	}
-	// stop := <-quit
+
+	log.Println("Test")
 	if <-quit {
 		log.Println("quit")
 	}
-
 }
 
-func startServer(signalChan chan<- bool) {
+func startServer(signal chan<- bool) {
 	// Start Server
+	server.Start(signal)
+}
 
-	l, err := net.Listen("tcp", ":55555")
-	if err != nil {
-		log.Println("listen error:", err)
-		return
-	}
-	log.Println("listen port:", "55555")
-	server_1 := server.New()
-	server_1.SetConnectionHandler(
-		func(cIndex int32, c net.Conn) {
-			defer c.Close()
-			stub := stub.New(cIndex)
-			stub.SetConnection(c)
-			stub.Handle(0, handlers.HandlerLogin(server_1))
-			stub.Start()
-		},
-	)
-	signalChan <- true
-	var connIndex int32 = 0
-	for {
-		c, err := l.Accept()
-		if err != nil {
-			log.Println("accept err:", err)
-			break
-		}
-		log.Println("start accepting")
-		go server_1.HandleNewConnection(connIndex, c)
-		connIndex++
-	}
+func startClient(quit chan<- bool, ID int32) {
+	c := client.New(quit, int32(ID))
+	c.SendLogin()
+	time.Sleep(time.Second * 1)
+	c.SendClose()
 }
