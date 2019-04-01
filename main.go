@@ -4,6 +4,7 @@ import (
 	"LunaTester/client"
 	"LunaTester/server"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -16,15 +17,28 @@ func main() {
 
 	// start client
 	quit := make(chan bool, 1)
-	// quit <- true
-	for i := 0; i < 3; i++ {
+
+	var wg sync.WaitGroup
+	for i := 0; i < 1; i++ {
+		wg.Add(1)
 		go startClient(quit, int32(i))
 	}
 
-	log.Println("Test")
-	if <-quit {
-		log.Println("quit")
-	}
+	go func() {
+		for {
+			_, ok := <-quit
+			if ok {
+				wg.Done()
+			} else {
+				log.Println("quit channel is drain, return.")
+				return
+			}
+		}
+	}()
+
+	wg.Wait()
+	close(quit)
+	log.Println("quit")
 }
 
 func startServer(signal chan<- bool) {
@@ -35,6 +49,6 @@ func startServer(signal chan<- bool) {
 func startClient(quit chan<- bool, ID int32) {
 	c := client.New(quit, int32(ID))
 	c.SendLogin()
-	time.Sleep(time.Second * 1)
+	time.Sleep(time.Second * time.Duration(ID+1))
 	c.SendClose()
 }

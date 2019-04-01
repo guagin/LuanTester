@@ -17,6 +17,6 @@ func HandleClose(server interfaces.Server) func([]byte) []byte {
 func close([]byte) []byte {
 	log.Printf("close")
 	buf := bytes.NewBuffer([]byte{})
-	binary.Write(buf, binary.LittleEndian, int32(-1))
+	binary.Write(buf, binary.LittleEndian, int32(1))
 	return buf.Bytes()
 }

@@ -36,8 +36,9 @@ func New(quit chan<- bool, ID int32) *Client {
 				return
 			}
 			log.Println("client receive:", code)
-			if code == -1 {
+			if code == 1 {
 				log.Println("time to leave.")
+				close(client.packets)
 				quit <- true
 			}
 		}
@@ -46,6 +47,7 @@ func New(quit chan<- bool, ID int32) *Client {
 }
 
 func (c *Client) SendLogin() {
+	log.Println("send login")
 	buf := bytes.NewBuffer([]byte{})
 	writeMessageCode(buf, 0)
 	err := binary.Write(buf, binary.LittleEndian, int32(c.ID))
@@ -56,13 +58,17 @@ func (c *Client) SendLogin() {
 }
 
 func (c *Client) SendClose() {
+	log.Println("send close")
 	buf := bytes.NewBuffer([]byte{})
-	writeMessageCode(buf, -1)
+	writeMessageCode(buf, 1)
 	c.connection.SendBytes(buf.Bytes())
 }
 
 func writeMessageCode(buf *bytes.Buffer, code int32) {
-	binary.Write(buf, binary.LittleEndian, code)
+	err := binary.Write(buf, binary.LittleEndian, code)
+	if err != nil {
+		log.Println("writeMessageCode failed:", err.Error())
+	}
 }
 
 func GetMessageCode(packet []byte) (int32, error) {

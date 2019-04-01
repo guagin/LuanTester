@@ -24,8 +24,8 @@ func Start(inited chan<- bool) {
 			stub := stub.New(cIndex)
 			stub.SetConnection(c)
 			stub.Handle(0, handlers.HandleLogin(server_1))
-			stub.Handle(-1, handlers.HandleClose(server_1))
-			stub.Process = func(packet []byte, quit chan<- bool) {
+			stub.Handle(1, handlers.HandleClose(server_1))
+			stub.SetProcess(func(packet []byte) {
 				code, err := client.GetMessageCode(packet)
 				if err != nil {
 					return
@@ -38,7 +38,7 @@ func Start(inited chan<- bool) {
 				res := handler(client.GetData(packet))
 
 				stub.Send(res)
-			}
+			})
 			stub.Start()
 		},
 	)
