@@ -40,6 +40,7 @@ func New(quit chan<- bool, ID int32) *Client {
 				log.Println("time to leave.")
 				close(client.packets)
 				quit <- true
+				return
 			}
 		}
 	}()

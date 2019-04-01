@@ -24,13 +24,14 @@ func main() {
 		go startClient(quit, int32(i))
 	}
 
+	// keep waiting the quit channel until it drain out.
 	go func() {
 		for {
 			_, ok := <-quit
 			if ok {
 				wg.Done()
 			} else {
-				log.Println("quit channel is drain, return.")
+				log.Println("quit channel is drain, end this goroutine.")
 				return
 			}
 		}
