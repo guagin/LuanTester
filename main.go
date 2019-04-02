@@ -5,7 +5,6 @@ import (
 	"LunaTester/server"
 	"log"
 	"sync"
-	"time"
 )
 
 func main() {
@@ -50,6 +49,6 @@ func startServer(signal chan<- bool) {
 func startClient(quit chan<- bool, ID int32) {
 	c := client.New(quit, int32(ID))
 	c.SendLogin()
-	time.Sleep(time.Second * time.Duration(ID+1))
+	// time.Sleep(time.Second * time.Duration(ID+1))
 	c.SendClose()
 }

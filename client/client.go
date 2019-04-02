@@ -4,6 +4,7 @@ import (
 	"LunaGO/server/conn"
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"log"
 	"net"
 )
@@ -52,8 +53,21 @@ func (c *Client) SendLogin() {
 	buf := bytes.NewBuffer([]byte{})
 	writeMessageCode(buf, 0)
 	err := binary.Write(buf, binary.LittleEndian, int32(c.ID))
+
+	playerID := fmt.Sprintf("player_%d", c.ID)
 	if err != nil {
 		log.Println("send login failed:", err.Error())
+		return
+	}
+	err = binary.Write(buf, binary.LittleEndian, int32(len(playerID)))
+	if err != nil {
+		log.Println("send login failed:", err.Error())
+		return
+	}
+	_, err = buf.Write([]byte(playerID))
+	if err != nil {
+		log.Println("send login failed:", err.Error())
+		return
 	}
 	c.connection.SendBytes(buf.Bytes())
 }

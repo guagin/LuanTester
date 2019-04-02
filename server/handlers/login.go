@@ -19,12 +19,22 @@ func HandleLogin(server interfaces.Server, stub *stub.Stub) func([]byte) []byte 
 		err := binary.Read(reader, binary.LittleEndian, &clientID)
 		if err != nil {
 			log.Println("login parsing clientID failed:", err.Error())
+			return nil
 		}
-		log.Printf("player(%d) login", clientID)
+		var playerIDLength int32
+		err = binary.Read(reader, binary.LittleEndian, &playerIDLength)
+
+		playerID := packet[8 : 8+playerIDLength]
+
+		if err != nil {
+			log.Println("login parsing playerID failed:", err.Error())
+			return nil
+		}
+		log.Printf("player(%s) login", playerID)
 		player := models.NewPlayer(clientID, "", "")
 		playerRepo.Register(player)
 		buf := bytes.NewBuffer([]byte{})
 		binary.Write(buf, binary.LittleEndian, int32(0))
-		return nil
+		return buf.Bytes()
 	}
 }
