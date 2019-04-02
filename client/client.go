@@ -33,6 +33,7 @@ func New(quit chan<- bool, ID int32) *Client {
 		for {
 			packet := <-client.packets
 			code, err := GetMessageCode(packet)
+			log.Println(packet)
 			if err != nil {
 				return
 			}

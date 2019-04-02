@@ -1,6 +1,8 @@
 package models
 
 import (
+	"bytes"
+	"encoding/binary"
 	"log"
 	"sync"
 	"time"
@@ -49,8 +51,29 @@ func (room *chatRoom) WriteLog(message string) {
 }
 
 func (room *chatRoom) Braodcast(message string) {
+	stubRepo := StubRepository()
 	room.pushTask(func() error {
 		log.Printf("broadcast: %s\n", message)
+
+		buf := bytes.NewBuffer([]byte{})
+		binary.Write(buf, binary.LittleEndian, int32(200))
+		messageLength := len(message)
+		binary.Write(buf, binary.LittleEndian, int32(messageLength))
+		buf.Write([]byte(message))
+
+		messageInBytes := buf.Bytes()
+		for _, player := range room.players {
+			go func(player *Player, message []byte) {
+				stub, err := stubRepo.Get(player.StubID)
+				if err != nil {
+					log.Println("send message failed:", err.Error())
+					return
+				}
+				log.Println("try to send message to ", stub.ID())
+
+				stub.Send(message)
+			}(player, messageInBytes)
+		}
 
 		return nil
 	})

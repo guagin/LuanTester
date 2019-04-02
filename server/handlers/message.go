@@ -31,12 +31,9 @@ func HandleMessage(server interfaces.Server, stub *stub.Stub) func(packet []byte
 		log.Printf("player(%s) send chat message:%s in %d\n", player.ID, message, player.ChatRoomID())
 
 		room := chatRoomRepo.Get(player.ChatRoomID())
-		// write log
 		room.WriteLog(message)
-		// broadcast
 		room.Braodcast(message)
 
-		// room.PushTask(room.Close())
 		return nil
 	}
 }
