@@ -27,22 +27,16 @@ func HandleMessage(server interfaces.Server, stub *stub.Stub) func(packet []byte
 			log.Println("parsing messageLength failed:", err.Error())
 			return nil
 		}
-		message := packet[4 : 4+messageLength]
+		message := string(packet[4 : 4+messageLength])
 		log.Printf("player(%s) send chat message:%s in %d\n", player.ID, message, player.ChatRoomID())
 
 		room := chatRoomRepo.Get(player.ChatRoomID())
 		// write log
-		room.PushTask(func() error {
-			log.Printf("write log: %s\n", message)
-
-			return nil
-		})
+		room.WriteLog(message)
 		// broadcast
-		room.PushTask(func() error {
-			log.Printf("broadcast: %s\n", message)
+		room.Braodcast(message)
 
-			return nil
-		})
+		// room.PushTask(room.Close())
 		return nil
 	}
 }

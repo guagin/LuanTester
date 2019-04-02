@@ -40,18 +40,38 @@ func (room *chatRoom) Join(player *Player) {
 	room.players[player.ID] = player
 }
 
-func (room *chatRoom) Close() func() error {
-	return func() error {
+func (room *chatRoom) WriteLog(message string) {
+	room.pushTask(func() error {
+		log.Printf("write log: %s\n", message)
+
+		return nil
+	})
+}
+
+func (room *chatRoom) Braodcast(message string) {
+	room.pushTask(func() error {
+		log.Printf("broadcast: %s\n", message)
+
+		return nil
+	})
+}
+
+func (room *chatRoom) Close() {
+	room.pushTask(func() error {
 		close(room.tasks)
 		return nil
-	}
+	})
+}
+
+func (room *chatRoom) pushTask(task func() error) {
+	room.tasks <- task
 }
 
 func (room *chatRoom) process() {
 	for {
 		task, ok := <-room.tasks
 		if !ok {
-			log.Println("chat room tasks channel close. stop process.")
+			log.Println("chat room tasks channel close. stop")
 			// room.close()
 			return
 		}
@@ -62,10 +82,6 @@ func (room *chatRoom) process() {
 		}
 
 	}
-}
-
-func (room *chatRoom) PushTask(task func() error) {
-	room.tasks <- task
 }
 
 var newChatRoomOnce sync.Once
