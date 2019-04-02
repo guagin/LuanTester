@@ -17,7 +17,6 @@ type chatRoom struct {
 	players map[string]*Player
 	logs    map[int64]*ChatMessage // key: unix time.
 	tasks   chan func() error
-	quit    bool
 }
 
 func ChatRoom() *chatRoom {
@@ -41,22 +40,27 @@ func (room *chatRoom) Join(player *Player) {
 	room.players[player.ID] = player
 }
 
-func (room *chatRoom) Close() {
-	room.quit = true
+func (room *chatRoom) Close() func() error {
+	return func() error {
+		close(room.tasks)
+		return nil
+	}
 }
 
 func (room *chatRoom) process() {
 	for {
 		task, ok := <-room.tasks
+		if !ok {
+			log.Println("chat room tasks channel close. stop process.")
+			// room.close()
+			return
+		}
 		err := task()
 		if err != nil {
 			log.Println(err.Error())
 			continue
 		}
-		if !ok {
-			// room.close()
-			return
-		}
+
 	}
 }
 
