@@ -6,6 +6,7 @@ import (
 	"LunaGO/server/stub"
 	"LunaTester/client"
 	"LunaTester/server/handlers"
+	"LunaTester/server/models"
 	"log"
 	"net"
 )
@@ -19,10 +20,13 @@ func Start(inited chan<- bool) {
 	}
 	log.Println("listen port:", "55555")
 	server_1 := server.New()
+	stubRepository := models.StubRepository()
 	server_1.SetConnectionHandler(
 		func(cIndex int32, c *conn.Connection) {
 			stub := stub.New(cIndex)
 			stub.SetConnection(c)
+			stubRepository.Register(cIndex, stub)
+			// handle message from client.
 			stub.Handle(0, handlers.HandleLogin(server_1))
 			stub.Handle(1, handlers.HandleClose(server_1))
 			stub.SetProcess(func(packet []byte) {

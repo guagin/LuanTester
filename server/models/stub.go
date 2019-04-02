@@ -1,29 +1,15 @@
 package models
 
 import (
-	"LunaGO/server/conn"
+	"LunaGO/server/stub"
 	"errors"
 	"fmt"
+	"log"
 	"sync"
 )
 
-// Stub to keep the infomation like connection..etc.
-type Stub struct {
-	ID         int32
-	connection *conn.Connection
-}
-
-// New will return a new Stub
-func New(ID int32, connection *conn.Connection) *Stub {
-	instance := &Stub{
-		ID:         ID,
-		connection: connection,
-	}
-	return instance
-}
-
 type stubRepository struct {
-	Stubs map[int32]*Stub
+	Stubs map[int32]*stub.Stub
 }
 
 var newRepositoryOnce sync.Once
@@ -35,13 +21,13 @@ func StubRepository() *stubRepository {
 }
 
 func newStubRepository() {
-
 	repository = &stubRepository{
-		Stubs: make(map[int32]*Stub),
+		Stubs: make(map[int32]*stub.Stub),
 	}
+	log.Println("new a stub repository ")
 }
 
-func (stubRepo *stubRepository) Register(ID int32, stub *Stub) {
+func (stubRepo *stubRepository) Register(ID int32, stub *stub.Stub) {
 	//TODO: add mux lock
 	stubRepo.Stubs[ID] = stub
 }
@@ -51,7 +37,7 @@ func (stubRepo *stubRepository) UnRegister(ID int32) {
 	delete(stubRepo.Stubs, ID)
 }
 
-func (stubRepo *stubRepository) Get(ID int32) (*Stub, error) {
+func (stubRepo *stubRepository) Get(ID int32) (*stub.Stub, error) {
 	stub := stubRepo.Stubs[ID]
 	if stub == nil {
 		return nil, errors.New(fmt.Sprintf("stub(%d) is not exist", ID))
