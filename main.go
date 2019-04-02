@@ -50,5 +50,7 @@ func startClient(quit chan<- bool, ID int32) {
 	c := client.New(quit, int32(ID))
 	c.SendLogin()
 	// time.Sleep(time.Second * time.Duration(ID+1))
+	c.SendCreateRoom()
+	c.SendChatMessage("hello!!")
 	c.SendClose()
 }

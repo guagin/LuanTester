@@ -7,9 +7,10 @@ import (
 )
 
 type Player struct {
-	StubID int32
-	ID     string
-	Name   string
+	StubID     int32
+	ID         string
+	Name       string
+	chatRoomID int64
 }
 
 func NewPlayer(stubID int32, id, name string) *Player {
@@ -19,6 +20,14 @@ func NewPlayer(stubID int32, id, name string) *Player {
 		Name:   name,
 	}
 	return instance
+}
+
+func (player *Player) ChatRoomID() int64 {
+	return player.chatRoomID
+}
+
+func (player *Player) SetChatRoomID(roomID int64) {
+	player.chatRoomID = roomID
 }
 
 type playerRepository struct {
@@ -45,6 +54,15 @@ func (repo *playerRepository) Get(id string) (*Player, error) {
 		return nil, errors.New(fmt.Sprintf("playerId(%s) not found", id))
 	}
 	return p, nil
+}
+
+func (repo *playerRepository) GetByStubID(id int32) (*Player, error) {
+	for _, player := range repo.players {
+		if player.StubID == id {
+			return player, nil
+		}
+	}
+	return nil, errors.New(fmt.Sprintf("player not found with stubID(%d)", id))
 }
 
 //TODO: check if player is initialed

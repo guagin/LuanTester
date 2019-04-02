@@ -72,6 +72,30 @@ func (c *Client) SendLogin() {
 	c.connection.SendBytes(buf.Bytes())
 }
 
+func (c *Client) SendCreateRoom() {
+	log.Println("send create room")
+	buf := bytes.NewBuffer([]byte{})
+	writeMessageCode(buf, 2)
+	c.connection.SendBytes(buf.Bytes())
+}
+
+func (c *Client) SendChatMessage(message string) {
+	log.Println("send chat message")
+	buf := bytes.NewBuffer([]byte{})
+	writeMessageCode(buf, 3)
+	err := binary.Write(buf, binary.LittleEndian, int32(len(message)))
+	if err != nil {
+		log.Println("send login failed:", err.Error())
+		return
+	}
+	_, err = buf.Write([]byte(message))
+	if err != nil {
+		log.Println("send login failed:", err.Error())
+		return
+	}
+	c.connection.SendBytes(buf.Bytes())
+}
+
 func (c *Client) SendClose() {
 	log.Println("send close")
 	buf := bytes.NewBuffer([]byte{})
