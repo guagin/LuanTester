@@ -29,6 +29,8 @@ func Start(inited chan<- bool) {
 			// handle message from client.
 			stub.Handle(0, handlers.HandleLogin(server_1, stub))
 			stub.Handle(1, handlers.HandleClose(server_1, stub))
+			stub.Handle(2, handlers.HandleCreateChatRoom(server_1, stub))
+			stub.Handle(3, handlers.HandleMessage(server_1, stub))
 			stub.SetProcess(func(packet []byte) {
 				code, err := client.GetMessageCode(packet)
 				if err != nil {
