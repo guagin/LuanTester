@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"fmt"
+	"sync"
 )
 
 type Player struct {
@@ -20,18 +21,25 @@ func NewPlayer(stubID int32, id, name string) *Player {
 	return instance
 }
 
-type PlayerRepository struct {
+type playerRepository struct {
 	players map[string]*Player
 }
 
-func NewPlayerRepository() *PlayerRepository {
-	instance := &PlayerRepository{
-		players: make(map[string]*Player),
-	}
-	return instance
+var newPlayerRepoOnce sync.Once
+var playerRepo *playerRepository
+
+func PlayerRepository() *playerRepository {
+	newPlayerRepoOnce.Do(new)
+	return playerRepo
 }
 
-func (repo *PlayerRepository) Get(id string) (*Player, error) {
+func new() {
+	playerRepo = &playerRepository{
+		players: make(map[string]*Player),
+	}
+}
+
+func (repo *playerRepository) Get(id string) (*Player, error) {
 	p := repo.players[id]
 	if p == nil {
 		return nil, errors.New(fmt.Sprintf("playerId(%s) not found", id))
@@ -40,10 +48,10 @@ func (repo *PlayerRepository) Get(id string) (*Player, error) {
 }
 
 //TODO: check if player is initialed
-func (repo *PlayerRepository) Register(player *Player) {
+func (repo *playerRepository) Register(player *Player) {
 	repo.players[player.ID] = player
 }
 
-func (repo *PlayerRepository) UnRegister(ID string) {
+func (repo *playerRepository) UnRegister(ID string) {
 	delete(repo.players, ID)
 }

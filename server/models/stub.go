@@ -13,15 +13,15 @@ type stubRepository struct {
 }
 
 var newRepositoryOnce sync.Once
-var repository *stubRepository
+var stubRepo *stubRepository
 
 func StubRepository() *stubRepository {
-	newRepositoryOnce.Do(newStubRepository) // make sure repository only get one instance.
-	return repository
+	newRepositoryOnce.Do(newStubRepo) // make sure repository only get one instance.
+	return stubRepo
 }
 
-func newStubRepository() {
-	repository = &stubRepository{
+func newStubRepo() {
+	stubRepo = &stubRepository{
 		Stubs: make(map[int32]*stub.Stub),
 	}
 	log.Println("new a stub repository ")

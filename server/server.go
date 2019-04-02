@@ -27,8 +27,8 @@ func Start(inited chan<- bool) {
 			stub.SetConnection(c)
 			stubRepository.Register(cIndex, stub)
 			// handle message from client.
-			stub.Handle(0, handlers.HandleLogin(server_1))
-			stub.Handle(1, handlers.HandleClose(server_1))
+			stub.Handle(0, handlers.HandleLogin(server_1, stub))
+			stub.Handle(1, handlers.HandleClose(server_1, stub))
 			stub.SetProcess(func(packet []byte) {
 				code, err := client.GetMessageCode(packet)
 				if err != nil {

@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"LunaGO/server/interfaces"
+	"LunaGO/server/stub"
 	"bytes"
 	"encoding/binary"
 	"log"
 )
 
-func HandleClose(server interfaces.Server) func([]byte) []byte {
+func HandleClose(server interfaces.Server, stub *stub.Stub) func([]byte) []byte {
 	return func(packet []byte) []byte {
 
 		return close(packet)

@@ -2,14 +2,16 @@ package handlers
 
 import (
 	"LunaGO/server/interfaces"
+	"LunaGO/server/stub"
+	"LunaTester/server/models"
 	"bytes"
 	"encoding/binary"
 	"log"
 )
 
-func HandleLogin(server interfaces.Server) func([]byte) []byte {
-	// clientReposiory :=
-
+func HandleLogin(server interfaces.Server, stub *stub.Stub) func([]byte) []byte {
+	playerRepo := models.PlayerRepository()
+	playerRepo = models.PlayerRepository()
 	return func(packet []byte) []byte {
 
 		var clientID int32
@@ -19,7 +21,8 @@ func HandleLogin(server interfaces.Server) func([]byte) []byte {
 			log.Println("login parsing clientID failed:", err.Error())
 		}
 		log.Printf("player(%d) login", clientID)
-
+		player := models.NewPlayer(clientID, "", "")
+		playerRepo.Register(player)
 		buf := bytes.NewBuffer([]byte{})
 		binary.Write(buf, binary.LittleEndian, int32(0))
 		return nil
